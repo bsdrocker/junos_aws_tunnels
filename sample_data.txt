@@ -1,0 +1,65 @@
+#
+# --------------------------------------------------------------------------------
+# IPSec Tunnel #1
+# --------------------------------------------------------------------------------
+#
+set security ike policy ike-pol-sometunnel-1 mode main 
+set security ike policy ike-pol-sometunnel-1 proposals ike-prop-aws-vpn
+set security ike policy ike-pol-sometunnel-1 pre-shared-key ascii-text XTChz9ORg0dQOR28Nqh3Ad3sI_E8wLs2
+
+set security ike gateway gw-sometunnel-1 ike-policy ike-pol-sometunnel-1
+set security ike gateway gw-sometunnel-1 external-interface ge-0/0/0.0
+set security ike gateway gw-sometunnel-1 address 1.1.1.1
+set security ike gateway gw-sometunnel-1 no-nat-traversal
+set security ike gateway gw-sometunnel-1 dead-peer-detection interval 10 threshold 3
+
+set security ipsec vpn sometunnel-1 ike gateway gw-sometunnel-1
+set security ipsec vpn sometunnel-1 ike ipsec-policy ipsec-pol-aws-vpn
+set security ipsec vpn sometunnel-1 df-bit clear 
+set security ipsec vpn sometunnel-1 bind-interface st0.1
+
+set interfaces st0.1 family inet address 169.254.1.6/30
+set interfaces st0.1 family inet mtu 1436
+
+set security zones security-zone sometunnel interfaces st0.1
+set security zones security-zone sometunnel host-inbound-traffic protocols bgp
+
+set routing-instances ri1 interface st0.1
+set routing-instances ri1 protocols bgp group sometunnel type external
+set routing-instances ri1 protocols bgp group sometunnel neighbor 169.254.1.5 export EXPORT-aws-default
+set routing-instances ri1 protocols bgp group sometunnel neighbor 169.254.1.5 peer-as 64512
+set routing-instances ri1 protocols bgp group sometunnel neighbor 169.254.1.5 hold-time 30
+set routing-instances ri1 protocols bgp group sometunnel neighbor 169.254.1.5 local-as 65001
+#
+# --------------------------------------------------------------------------------
+# IPSec Tunnel #2
+# --------------------------------------------------------------------------------
+#
+set security ike policy ike-pol-sometunnel-2 mode main 
+set security ike policy ike-pol-sometunnel-2 proposals ike-prop-aws-vpn
+set security ike policy ike-pol-sometunnel-2 pre-shared-key ascii-text S9FPJwz6KfjzR73Pj_.yakcyYYZtvMjp
+
+set security ike gateway gw-sometunnel-2 ike-policy ike-pol-sometunnel-2
+set security ike gateway gw-sometunnel-2 external-interface ge-0/0/0.0
+set security ike gateway gw-sometunnel-2 address 2.2.2.2
+set security ike gateway gw-sometunnel-2 no-nat-traversal
+set security ike gateway gw-sometunnel-2 dead-peer-detection interval 10 threshold 3
+
+set security ipsec vpn sometunnel-2 ike gateway gw-sometunnel-2
+set security ipsec vpn sometunnel-2 ike ipsec-policy ipsec-pol-aws-vpn
+set security ipsec vpn sometunnel-2 df-bit clear 
+set security ipsec vpn sometunnel-2 bind-interface st0.2
+
+set interfaces st0.2 family inet address 169.254.1.2/30
+set interfaces st0.2 family inet mtu 1436
+
+set security zones security-zone sometunnel interfaces st0.2
+set security zones security-zone sometunnel host-inbound-traffic protocols bgp
+
+set routing-instances ri1 interface st0.2
+set routing-instances ri1 protocols bgp group sometunnel type external
+set routing-instances ri1 protocols bgp group sometunnel neighbor 169.254.1.1 export EXPORT-aws-default
+set routing-instances ri1 protocols bgp group sometunnel neighbor 169.254.1.1 peer-as 64512
+set routing-instances ri1 protocols bgp group sometunnel neighbor 169.254.1.1 hold-time 30
+set routing-instances ri1 protocols bgp group sometunnel neighbor 169.254.1.1 local-as 65001
+#    

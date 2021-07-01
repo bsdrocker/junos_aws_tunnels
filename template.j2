@@ -1,0 +1,56 @@
+
+set security ike policy ike-pol-{{ vpc_name }}-1 mode main 
+set security ike policy ike-pol-{{ vpc_name }}-1 proposals ike-prop-aws-vpn
+set security ike policy ike-pol-{{ vpc_name }}-1 pre-shared-key ascii-text {{ psk1 }}
+
+set security ike gateway gw-{{ vpc_name }}-1 ike-policy ike-pol-{{ vpc_name }}-1
+set security ike gateway gw-{{ vpc_name }}-1 external-interface ge-0/0/0.0
+set security ike gateway gw-{{ vpc_name }}-1 address {{ gateway1 }}
+set security ike gateway gw-{{ vpc_name }}-1 no-nat-traversal
+set security ike gateway gw-{{ vpc_name }}-1 dead-peer-detection interval 10 threshold 3
+
+set security ipsec vpn {{ vpc_name }}-1 ike gateway gw-{{ vpc_name }}-1
+set security ipsec vpn {{ vpc_name }}-1 ike ipsec-policy ipsec-pol-aws-vpn
+set security ipsec vpn {{ vpc_name }}-1 df-bit clear 
+set security ipsec vpn {{ vpc_name }}-1 bind-interface st0.{{ st1 }}
+
+set interfaces st0.{{ st1 }} family inet address {{ st_ip1 }}
+set interfaces st0.{{ st1 }} family inet mtu 1436
+
+set security zones security-zone {{ vpc_name }} interfaces st0.{{ st1 }}
+set security zones security-zone {{ vpc_name }} host-inbound-traffic protocols bgp
+
+set routing-instances ri1 interface st0.{{ st1 }}
+set routing-instances ri1 protocols bgp group {{ vpc_name }} type external
+set routing-instances ri1 protocols bgp group {{ vpc_name }} neighbor {{ neighbor1 }} export EXPORT-aws-default
+set routing-instances ri1 protocols bgp group {{ vpc_name }} neighbor {{ neighbor1 }} peer-as 64512
+set routing-instances ri1 protocols bgp group {{ vpc_name }} neighbor {{ neighbor1 }} hold-time 30
+set routing-instances ri1 protocols bgp group {{ vpc_name }} neighbor {{ neighbor1 }} local-as 65001
+
+set security ike policy ike-pol-{{ vpc_name }}-2 mode main 
+set security ike policy ike-pol-{{ vpc_name }}-2 proposals ike-prop-aws-vpn
+set security ike policy ike-pol-{{ vpc_name }}-2 pre-shared-key ascii-text {{ psk2 }}
+
+set security ike gateway gw-{{ vpc_name }}-2 ike-policy ike-pol-{{ vpc_name }}-2
+set security ike gateway gw-{{ vpc_name }}-2 external-interface ge-0/0/0.0
+set security ike gateway gw-{{ vpc_name }}-2 address {{ gateway2 }}
+set security ike gateway gw-{{ vpc_name }}-2 no-nat-traversal
+set security ike gateway gw-{{ vpc_name }}-2 dead-peer-detection interval 10 threshold 3
+
+set security ipsec vpn {{ vpc_name }}-2 ike gateway gw-{{ vpc_name }}-2
+set security ipsec vpn {{ vpc_name }}-2 ike ipsec-policy ipsec-pol-aws-vpn
+set security ipsec vpn {{ vpc_name }}-2 df-bit clear 
+set security ipsec vpn {{ vpc_name }}-2 bind-interface st0.{{ st2 }}
+
+set interfaces st0.{{ st2 }} family inet address {{ st_ip2 }}
+set interfaces st0.{{ st2 }} family inet mtu 1436
+
+set security zones security-zone {{ vpc_name }} interfaces st0.{{ st2 }}
+set security zones security-zone {{ vpc_name }} host-inbound-traffic protocols bgp
+
+set routing-instances ri1 interface st0.{{ st2 }}
+set routing-instances ri1 protocols bgp group {{ vpc_name }} type external
+set routing-instances ri1 protocols bgp group {{ vpc_name }} neighbor {{ neighbor2 }} export EXPORT-aws-default
+set routing-instances ri1 protocols bgp group {{ vpc_name }} neighbor {{ neighbor2 }} peer-as 64512
+set routing-instances ri1 protocols bgp group {{ vpc_name }} neighbor {{ neighbor2 }} hold-time 30
+set routing-instances ri1 protocols bgp group {{ vpc_name }} neighbor {{ neighbor2 }} local-as 65001
